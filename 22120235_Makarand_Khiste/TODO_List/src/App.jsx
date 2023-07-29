@@ -133,8 +133,8 @@ const App = () => {
         onKeyPress={handleKeyPress}
       />
       <hr />
-      {todos.map((todo, index) => (
-        <TodoItem key={index} todo={todo} index={index} dispatch={dispatch} />
+      {todos.map((todo) => (
+        <TodoItem key={todo.id} todo={todo} dispatch={dispatch} />
       ))}
     </div>
   );
