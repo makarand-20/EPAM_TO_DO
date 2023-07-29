@@ -1,8 +1,7 @@
-/* eslint-disable react/prop-types */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useReducer } from 'react';
 import './App.css';
 
-const TodoItem = ({ todo, index, markAsDone, deleteTodo, updateTodo }) => {
+const TodoItem = ({ todo, index, dispatch }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(todo.text);
 
@@ -12,7 +11,7 @@ const TodoItem = ({ todo, index, markAsDone, deleteTodo, updateTodo }) => {
 
   const handleUpdate = () => {
     if (editedText.trim() !== '') {
-      updateTodo(index, editedText);
+      dispatch({ type: 'UPDATE_TODO', index, text: editedText });
       setIsEditing(false);
     }
   };
@@ -42,14 +41,14 @@ const TodoItem = ({ todo, index, markAsDone, deleteTodo, updateTodo }) => {
           <>
             <button
               className={`done-btn ${todo.done ? 'done' : ''}`}
-              onClick={() => markAsDone(index)}
+              onClick={() => dispatch({ type: 'TOGGLE_TODO', index })}
             >
               <i className={`fas ${todo.done ? 'fa-undo' : 'fa-check-circle'}`}></i>
             </button>
             <button className="edit-btn" onClick={handleEdit}>
               <i className="fas fa-edit"></i>
             </button>
-            <button className="delete-btn" onClick={() => deleteTodo(index)}>
+            <button className="delete-btn" onClick={() => dispatch({ type: 'DELETE_TODO', index })}>
               <i className="fas fa-trash-alt"></i>
             </button>
           </>
@@ -69,48 +68,54 @@ const TodoItem = ({ todo, index, markAsDone, deleteTodo, updateTodo }) => {
   );
 };
 
+const todoReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_TODOS':
+      return action.todos;
+
+    case 'ADD_TODO':
+      if (action.text.trim() !== '') {
+        const newTodo = { text: action.text, done: false };
+        return [...state, newTodo];
+      }
+      return state;
+
+    case 'TOGGLE_TODO':
+      return state.map((todo, index) =>
+        index === action.index ? { ...todo, done: !todo.done } : todo
+      );
+
+    case 'DELETE_TODO':
+      return state.filter((_, i) => i !== action.index);
+
+    case 'UPDATE_TODO':
+      return state.map((todo, index) =>
+        index === action.index ? { ...todo, text: action.text } : todo
+      );
+
+    default:
+      return state;
+  }
+};
+
 const App = () => {
-  const [todos, setTodos] = useState(() => {
-    const storedTodos = localStorage.getItem('todos');
-    return storedTodos ? JSON.parse(storedTodos) : [];
-  });
+  const [todos, dispatch] = useReducer(todoReducer, []);
 
   useEffect(() => {
-    localStorage.setItem('todos', JSON.stringify(todos));
-  }, [todos]);
+    const storedTodos = localStorage.getItem('todos');
+    if (storedTodos) {
+      dispatch({ type: 'SET_TODOS', todos: JSON.parse(storedTodos) });
+    }
+  }, []);
 
   const [inputValue, setInputValue] = useState('');
   const [showCompleted, setShowCompleted] = useState(false);
   const [showPending, setShowPending] = useState(false);
 
-  const addTodo = () => {
-    if (inputValue.trim() !== '') {
-      const newTodo = { text: inputValue, done: false };
-      setTodos((prevTodos) => [...prevTodos, newTodo]);
-      setInputValue('');
-    }
-  };
-
-  const markAsDone = (index) => {
-    const updatedTodos = [...todos];
-    updatedTodos[index].done = !updatedTodos[index].done;
-    setTodos(updatedTodos);
-  };
-
-  const deleteTodo = (index) => {
-    const updatedTodos = todos.filter((_, i) => i !== index);
-    setTodos(updatedTodos);
-  };
-
-  const updateTodo = (index, newText) => {
-    const updatedTodos = [...todos];
-    updatedTodos[index].text = newText;
-    setTodos(updatedTodos);
-  };
-
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
-      addTodo();
+      dispatch({ type: 'ADD_TODO', text: inputValue });
+      setInputValue('');
     }
   };
 
@@ -138,28 +143,21 @@ const App = () => {
   return (
     <div className="container">
       <h1>Todo List</h1>
-      <div className="tabs">
-      </div>
       <input
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        placeholder='Add a new todo...'
+        placeholder="Add a new todo..."
         onKeyPress={handleKeyPress}
       />
-      <button onClick={showAllTodos}>All</button>
+      <div className="tabs">
+        <button onClick={showAllTodos}>All</button>
         <button onClick={showPendingTodos}>Show Pending</button>
         <button onClick={showCompletedTodos}>Show Completed</button>
-        <hr />
+      </div>
+      <hr />
       {filteredTodos.map((todo, index) => (
-        <TodoItem
-          key={index}
-          todo={todo}
-          index={index}
-          markAsDone={markAsDone}
-          deleteTodo={deleteTodo}
-          updateTodo={updateTodo}
-        />
+        <TodoItem key={index} todo={todo} index={index} dispatch={dispatch} />
       ))}
     </div>
   );
