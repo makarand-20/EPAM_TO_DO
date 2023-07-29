@@ -1,0 +1,78 @@
+.app {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #007bff;
+}
+
+.todo-input {
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.todo-input input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #eee4e4;
+  border-radius: 20px; /* Added border radius for roundness */
+  font-size: 16px;
+  outline: none; /* Remove the default outline */
+}
+
+.todo-input button {
+  padding: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.todo-input button img,
+.edit-button img,
+.delete-button img {
+  width: 20px;
+  height: 20px;
+}
+
+.todo-list {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 15px;
+  background-color: #fff;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 5px;
+}
+
+.todo-item label {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  cursor: pointer;
+}
+
+.todo-item input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.todo-item.completed {
+  text-decoration: line-through;
+  color: #808080;
+}
+
+.todo-item span.task-text {
+  flex: 1;
+  padding-left: 10
+}
